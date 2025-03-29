@@ -1,0 +1,110 @@
+- hosts: webservers
+  remote_user: ec2-user
+  become: yes
+
+  vars:
+    wp_db_name: wordpressdb
+    wp_db_user: wp_user
+    wp_db_password: wp_pass
+    wp_db_host: wordpressdb.cbmcqwqokgyq.eu-west-1.rds.amazonaws.com  # Replace with your actual RDS hostname
+    wp_url: "https://wordpress.org/latest.tar.gz"
+    wp_install_dir: "/var/www/html"
+
+  tasks:
+    - name: install required packages  # Installing all packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - httpd
+        - telnet
+
+    - name: Remove old PHP versions
+      yum:
+        name: "php*"
+        state: absent
+
+    - name: Enable PHP 7.4 in Amazon Linux 2
+      command: amazon-linux-extras enable php7.4
+      args:
+        warn: false
+
+    - name: Install PHP 7.4 and required modules
+      yum:
+        name:
+          - php
+          - php-cli
+          - php-mysqlnd
+          - php-fpm
+          - php-json
+          - php-mbstring
+          - php-xml
+          - unzip
+          - wget
+        state: present
+
+    - name: Set SELinux to permissive mode (avoid permission issues)
+      command: setenforce 0
+      ignore_errors: yes
+      when: ansible_selinux is defined and ansible_selinux.status == "enabled"
+
+    - name: Enable and Start Apache
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Ensure /var/www/html exists
+      file:
+        path: "/var/www/html"
+        state: directory
+        owner: apache
+        group: apache
+        mode: '0755'
+
+    - name: Download WordPress
+      get_url:
+        url: "https://wordpress.org/wordpress-6.7.tar.gz"
+        dest: "/tmp/wordpress.tar.gz"
+
+    - name: Extract WordPress
+      unarchive:
+        src: "/tmp/wordpress.tar.gz"
+        dest: "/var/www/html/"
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Set Permissions for wordpress files
+      file:
+        path: "/var/www/html/"
+        state: directory
+        owner: apache
+        group: apache
+        mode: '0755'
+        recurse: yes
+
+    - name: Configure wp-config.php for WordPress    
+      template:                                     
+        src: wp-config.php.j2                       # No need of configuring manually. Wordpress takes credentials from DB automatically
+        dest: "/var/www/html/wp-config.php"         
+        owner: apache                               
+        group: apache
+        mode: '0600'
+
+
+    - name: Restart Apache to apply PHP changes
+      service:
+        name: httpd
+        state: restarted
+
+
+
+
+
+
+
+
+
+
+
+

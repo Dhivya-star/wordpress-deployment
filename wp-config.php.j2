@@ -1,0 +1,27 @@
+<?php
+define('DB_NAME', '{{ wp_db_name }}');
+define('DB_USER', '{{ wp_db_user }}');
+define('DB_PASSWORD', '{{ wp_db_password }}');
+define('DB_HOST', '{{ wp_db_host }}'); // Use your RDS endpoint here
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+
+$table_prefix = 'wp_';
+
+define('AUTH_KEY', '{{ lookup("password", "/dev/null", length=32) }}');
+define('SECURE_AUTH_KEY', '{{ lookup("password", "/dev/null", length=32) }}');
+define('LOGGED_IN_KEY', '{{ lookup("password", "/dev/null", length=32) }}');
+define('NONCE_KEY', '{{ lookup("password", "/dev/null", length=32) }}');
+define('AUTH_SALT', '{{ lookup("password", "/dev/null", length=32) }}');
+define('SECURE_AUTH_SALT', '{{ lookup("password", "/dev/null", length=32) }}');
+define('LOGGED_IN_SALT', '{{ lookup("password", "/dev/null", length=32) }}');
+define('NONCE_SALT', '{{ lookup("password", "/dev/null", length=32) }}');
+
+define('WP_DEBUG', false);
+
+if (!defined('ABSPATH')) {
+    define('ABSPATH', dirname(__FILE__) . '/');
+}
+
+require_once ABSPATH . 'wp-settings.php';
+?>

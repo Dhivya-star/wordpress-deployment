@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    environment {
+        TF_DIR = '.'  // Terraform working directory (repo root)
+    }
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Dhivya-star/Wordpress-Deployment.git'
+            }
+        }
+        stage('Terraform Init & Apply') {
+            steps {
+                dir(TF_DIR) {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+        stage('Verify Inventory File') {
+            steps {
+                script {
+                    sh "cat /var/lib/jenkins/workspace/Terraform-Ansible-Pipeline/inventory.ini"
+                }
+            }
+        }
+        stage('Run Ansible Playbook') {
+            steps {
+                sh '''
+                ansible-playbook -i /var/lib/jenkins/workspace/Terraform-Ansible-Pipeline/inventory.ini wordpress.yaml
+                '''
+            }
+        }
+    }
+}

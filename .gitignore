@@ -1,0 +1,16 @@
+# Ignore SSH private keys
+test-key.pem
+
+# Ignore Terraform state files (Avoid exposing sensitive info)
+*.tfstate
+*.tfstate.backup
+
+# Ignore Terraform cache
+.terraform/
+
+# Ignore Ansible logs
+ansible.log
+
+# Ignore unnecessary files
+*.log
+*.bak
